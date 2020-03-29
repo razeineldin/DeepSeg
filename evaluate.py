@@ -44,9 +44,9 @@ def get_prediction_images(pred_dir='preds/', preds_shape=(3445,240,240)):
         pred_imgs[i,] = imread(img, 0)
     return pred_imgs
 
-def save_evaluation_csv(pred_path='preds/', truth_path='truth/', evaluate_path='evaluations/'):
-    header = ("Dice", "Hausdorff distance", "Sensitivity", "Specificity")
-    evaluation_functions = (get_dice_coefficient, get_hausdorff_distance, get_sensitivity, get_specificity)
+def save_evaluation_csv(pred_path='preds/', truth_path='truth/', evaluate_path='evaluations/', save_plot=False):
+    header = ("Dice", "Sensitivity", "Specificity", "Hausdorff distance")
+    evaluation_functions = (get_dice_coefficient, get_sensitivity, get_specificity, get_hausdorff_distance)
     rows = list()
     subject_ids = list()
 
@@ -68,15 +68,16 @@ def save_evaluation_csv(pred_path='preds/', truth_path='truth/', evaluate_path='
     df = pd.DataFrame.from_records(rows, columns=header, index=subject_ids)
     df.to_csv(evaluate_path+"/brats19_"+config['project_name']+"_scores.csv")
 
-    scores = dict()
-    for index, score in enumerate(df.columns):
-        values = df.values.T[index]
-        scores[score] = values[np.isnan(values) == False]
+    if save_plot:
+        scores = dict()
+        for index, score in enumerate(df.columns[:-1]):
+            values = df.values.T[index]
+            scores[score] = values[np.isnan(values) == False]
 
-    plt.boxplot(list(scores.values()), labels=list(scores.keys()))
-    plt.ylabel("Scores")
-    plt.savefig(evaluate_path+"/validation_scores_boxplot.png")
-    plt.close()
+        plt.boxplot(list(scores.values()), labels=list(scores.keys()))
+        plt.ylabel("Evaluation scores")
+        plt.savefig(evaluate_path+"/validation_scores_boxplot.png")
+        plt.close()
 
 def main(sample_output=False, save_csv=False):
     # create the DeepSeg model
@@ -93,7 +94,7 @@ def main(sample_output=False, save_csv=False):
             load_model=config['load_model'])
 
     # Evaluate the entire predictions
-    print("Evaluating the whole predictions:")
+    """print("Evaluating the whole predictions:")
     predictions_shape = (config['n_valid_images'], config['input_height'], config['input_width'])
     predictions = np.zeros(predictions_shape)
     predictions = get_prediction_images(pred_dir=config['pred_path'], preds_shape=predictions.shape)
@@ -109,13 +110,13 @@ def main(sample_output=False, save_csv=False):
 
     evaluation_functions = (get_dice_coefficient, get_hausdorff_distance, get_sensitivity, get_specificity)
     print("Dice, Hausdorff distance, Sensitivity, Specificity")
-    print([func(truth_whole, pred_whole)for func in evaluation_functions])
+    print([func(truth_whole, pred_whole)for func in evaluation_functions])"""
 
     # save data to .csv file
     if save_csv:
         print("Saving the evaluations to an .csv file:")
         save_evaluation_csv(pred_path=config['pred_path'], truth_path=config['val_annotations'],
-                            evaluate_path=config['evaluate_path'])
+                            evaluate_path=config['evaluate_path'], save_plot=config['save_plot'])
 
     # sample output
     if sample_output:

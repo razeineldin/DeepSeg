@@ -115,6 +115,7 @@ config['sample_path'] = 'BraTS19_TCIA10_408_1-66'
 config['pred_path'] = 'preds/' + config['project_name'] + '/'
 config['evaluate_path'] = 'evaluations/' # + config['project_name'] + '/'
 config['save_csv'] = True # save the evaluations as .csv file
+config['save_plot'] = True # save the evaluations plot
 
 # create folders
 if not os.path.exists(config['log_dir']):

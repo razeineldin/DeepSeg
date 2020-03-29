@@ -92,24 +92,22 @@ def get_tumor_core_mask(data):
 def get_enhancing_tumor_mask(data):
     return data == 4
 
-def get_dice_coefficient(truth, prediction, epsilon=0.00001):
-    return 2 * np.sum(truth * prediction)/(np.sum(truth) + np.sum(prediction) + epsilon)
+def get_dice_coefficient(truth, prediction):
+    return 2 * np.sum(truth * prediction)/(np.sum(truth) + np.sum(prediction))
 
 def evaluate_dice_coefficient(y_true, y_pred):
-    y_true_f = y_true.flatten('F')
-    y_pred_f = y_pred.flatten('F')
-    intersection = np.sum(y_true_f * y_pred_f)
-    return (2. * intersection) / (np.sum(y_true_f) + np.sum(y_pred_f))
+    intersection = np.sum(y_true * y_pred)
+    return (2. * intersection) / (np.sum(y_true) + np.sum(y_pred))
 
-def get_sensitivity(y_true, y_pred, epsilon=0.00001):
+def get_sensitivity(y_true, y_pred):
     true_positives = np.sum(np.round(np.clip(y_true * y_pred, 0, 1)))
     possible_positives = np.sum(np.round(np.clip(y_true, 0, 1)))
-    return true_positives / (possible_positives + epsilon)
+    return true_positives / (possible_positives)
 
-def get_specificity(y_true, y_pred, epsilon=0.00001):
+def get_specificity(y_true, y_pred):
     true_negatives = np.sum(np.round(np.clip((1-y_true) * (1-y_pred), 0, 1)))
     possible_negatives = np.sum(np.round(np.clip(1-y_true, 0, 1)))
-    return true_negatives / (possible_negatives + epsilon)
+    return true_negatives / (possible_negatives)
 
 def get_hausdorff_distance(truth, prediction):
     """Computes the Hausdorff distance, uses `scipy` implementation of 'an efficient algorithm for
