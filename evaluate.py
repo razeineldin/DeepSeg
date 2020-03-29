@@ -76,7 +76,7 @@ def save_evaluation_csv(pred_path='preds/', truth_path='truth/', evaluate_path='
 
         plt.boxplot(list(scores.values()), labels=list(scores.keys()))
         plt.ylabel("Evaluation scores")
-        plt.savefig(evaluate_path+"/validation_scores_boxplot.png")
+        plt.savefig(evaluate_path+"/brats19_"+config['project_name']+"_scores_boxplot.png")
         plt.close()
 
 def main(sample_output=False, save_csv=False):
