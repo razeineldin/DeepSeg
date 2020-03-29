@@ -93,6 +93,7 @@ def main(sample_output=False, save_csv=False):
             load_model=config['load_model'])
 
     # Evaluate the entire predictions
+    print("Evaluating the whole predictions:")
     predictions_shape = (config['n_valid_images'], config['input_height'], config['input_width'])
     predictions = np.zeros(predictions_shape)
     predictions = get_prediction_images(pred_dir=config['pred_path'], preds_shape=predictions.shape)
@@ -107,12 +108,12 @@ def main(sample_output=False, save_csv=False):
     #pred_enhancing = get_enhancing_tumor_mask(predictions)
 
     evaluation_functions = (get_dice_coefficient, get_hausdorff_distance, get_sensitivity, get_specificity)
-    print("Evaluating the whole predictions:")
     print("Dice, Hausdorff distance, Sensitivity, Specificity")
-    print([func((truth_whole, pred_whole)for func in evaluation_functions])
+    print([func(truth_whole, pred_whole)for func in evaluation_functions])
 
     # save data to .csv file
     if save_csv:
+        print("Saving the evaluations to an .csv file:")
         save_evaluation_csv(pred_path=config['pred_path'], truth_path=config['val_annotations'],
                             evaluate_path=config['evaluate_path'])
 

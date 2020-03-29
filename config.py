@@ -34,7 +34,7 @@ elif K.image_data_format() == 'channels_last':
     IMAGE_ORDERING = 'channels_last'
 
 config = dict()
-config['dataset_path'] = '/home/ramy/Documents/Datasets/BRATS_2019/dataset_19_no_empty/'
+config['dataset_path'] = '/home/dl_machine/Datasets/BRATS_2019/dataset_19_no_empty/'
 
 # model configuration
 config['encoder_name'] = 'UNet-Mod' # name of the encoder: UNet, UNet-Mod, VGG16, ResNet50, MobileNet, MobileNetV2, Xception, NASNetMobile, DenseNet121
@@ -70,7 +70,7 @@ config['tensorboard_path'] = 'logs_tensor_board/' + config['project_name']
 
 ####################################################################
 ### Hyper parameter: ###
-config['batch_size'] = 16 
+config['batch_size'] = 16
 config['val_batch_size'] = 16
 config['filter_size'] = 32 # number of basic filters
 config['optimizer_lr'] = 1e-4
@@ -85,8 +85,7 @@ config['output_height'] = 224
 config['output_width'] = 224
 config['epochs'] = 35	# number of training epochs
 config['load_model'] = True # continue training from a saved checkpoint
-#config['load_model_path'] = "paper_weights/DenseNet121_UNet-Mod.hdf5" # specifiy the loaded model path or None
-config['load_model_path'] = "paper_weights/UNet-Mod_UNet-Mod.hdf5" # specifiy the loaded model path or None
+config['load_model_path'] = "paper_weights/"+config['encoder_name']+"_"+config['decoder_name']+".hdf5" # specifiy the loaded model path or None
 
 config['model_num'] = '20' # load model by the number of training epoch if config['load_model_path'] = None
 config['initial_epoch'] = config['model_num'] if config['load_model'] else 0  # continue training
@@ -111,7 +110,7 @@ config['elastic'] = (720, 24) # alpha=720, sigma=24
 config['random_order'] = True # apply augmenters in random order
 
 # prediction and evaluation
-config['sample_output'] = True # show a sample output from brats_19
+config['sample_output'] = False # show a sample output from brats_19
 config['sample_path'] = 'BraTS19_TCIA10_408_1-66'
 config['pred_path'] = 'preds/' + config['project_name'] + '/'
 config['evaluate_path'] = 'evaluations/' # + config['project_name'] + '/'
