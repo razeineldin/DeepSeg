@@ -26,8 +26,11 @@ from utils import *
 from models import *
 from predict import *
 from keras import backend as K
+import pandas as pd
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
 
-# Evaluate the entire predictions
 def get_truth_images(truth_dir='truth/', truth_shape=(3445,224,224)):
     truth_imgs = np.zeros(truth_shape)
     for i , img in enumerate(tqdm(glob.glob(os.path.join(truth_dir,"*.png")))):
@@ -41,7 +44,41 @@ def get_prediction_images(pred_dir='preds/', preds_shape=(3445,240,240)):
         pred_imgs[i,] = imread(img, 0)
     return pred_imgs
 
-def main(sample_output=False):
+def save_evaluation_csv(pred_path='preds/', truth_path='truth/', evaluate_path='evaluations/'):
+    header = ("Dice", "Hausdorff distance", "Sensitivity", "Specificity")
+    evaluation_functions = (get_dice_coefficient, get_hausdorff_distance, get_sensitivity, get_specificity)
+    rows = list()
+    subject_ids = list()
+
+    for i, img in enumerate(tqdm(glob.glob(pred_path+"/*"))):
+        subject_ids.append(os.path.basename(img))
+        prediction = imread(img, 0)
+        truth_image = imread(truth_path+os.path.basename(img), 0)
+        truth_image = resize(truth_image, (config['input_height'], config['input_width']), interpolation = INTER_NEAREST)
+
+        truth_whole = get_whole_tumor_mask(truth_image)
+        #truth_core = get_tumor_core_mask(truth_image)
+        #truth_enhancing = get_enhancing_tumor_mask(truth_image)
+        pred_whole = get_whole_tumor_mask(prediction)
+        #pred_core = get_tumor_core_mask(prediction)
+        #pred_enhancing = get_enhancing_tumor_mask(prediction)
+
+        rows.append([func(truth_whole, pred_whole)for func in evaluation_functions])
+
+    df = pd.DataFrame.from_records(rows, columns=header, index=subject_ids)
+    df.to_csv(evaluate_path+"/brats19_"+config['project_name']+"_scores.csv")
+
+    scores = dict()
+    for index, score in enumerate(df.columns):
+        values = df.values.T[index]
+        scores[score] = values[np.isnan(values) == False]
+
+    plt.boxplot(list(scores.values()), labels=list(scores.keys()))
+    plt.ylabel("Scores")
+    plt.savefig(evaluate_path+"/validation_scores_boxplot.png")
+    plt.close()
+
+def main(sample_output=False, save_csv=False):
     # create the DeepSeg model
     unet_2d_model = get_deepseg_model(
             encoder_name=config['encoder_name'], 
@@ -55,7 +92,7 @@ def main(sample_output=False):
             trainable=config['trainable'], 
             load_model=config['load_model'])
 
-    # get evaluations of all images in the prediction directory
+    # Evaluate the entire predictions
     predictions_shape = (config['n_valid_images'], config['input_height'], config['input_width'])
     predictions = np.zeros(predictions_shape)
     predictions = get_prediction_images(pred_dir=config['pred_path'], preds_shape=predictions.shape)
@@ -69,35 +106,20 @@ def main(sample_output=False):
     #pred_core = get_tumor_core_mask(predictions)
     #pred_enhancing = get_enhancing_tumor_mask(predictions)
 
-    whole_dice_score = get_dice_coefficient(truth_whole, pred_whole)
-    #core_dice_score = get_dice_coefficient(truth_core, pred_core)
-    #enhancing_dice_score = get_dice_coefficient(truth_enhancing, pred_enhancing)
-    whole_hausdorff = get_hausdorff_distance(truth_whole, pred_whole)
-    #core_hausdorff = get_hausdorff_distance(truth_core, pred_core)
-    #enhancing_hausdorff = get_hausdorff_distance(truth_enhancing, pred_enhancing)
-    whole_sensitivity = get_sensitivity(truth_whole, pred_whole)
-    #core_sensitivity = get_sensitivity(truth_core, pred_core)
-    #enhancing_sensitivity = get_sensitivity(truth_enhancing, pred_enhancing)
-    whole_specificity = get_specificity(truth_whole, pred_whole)
-    #core_specificity = get_specificity(truth_core, pred_core)
-    #enhancing_specificity = get_specificity(truth_enhancing, pred_enhancing)
+    evaluation_functions = (get_dice_coefficient, get_hausdorff_distance, get_sensitivity, get_specificity)
+    print("Evaluating the whole predictions:")
+    print("Dice, Hausdorff distance, Sensitivity, Specificity")
+    print([func((truth_whole, pred_whole)for func in evaluation_functions])
 
-    print('Whole dice score:', whole_dice_score)
-    #print('Core dice score:', core_dice_score)
-    #print('Enhancing dice score:', enhancing_dice_score)
-    print('Whole hausdorff distance (mm):', whole_hausdorff)
-    #print('Core hausdorff distance (mm):', core_hausdorff)
-    #print('Enhancing hausdorff distance (mm):', enhancing_hausdorff)
-    print('Whole sensitivity:', whole_sensitivity)
-    #print('Core sensitivity:', core_sensitivity)
-    #print('Enhancing sensitivity:', enhancing_sensitivity)
-    print('Whole specificity:', whole_specificity)
-    #print('Core specificity:', core_specificity)
-    #print('Enhancing specificity:', enhancing_specificity)
+    # save data to .csv file
+    if save_csv:
+        save_evaluation_csv(pred_path=config['pred_path'], truth_path=config['val_annotations'],
+                            evaluate_path=config['evaluate_path'])
 
     # sample output
     if sample_output:
         sample_path = config['sample_path']
+        print("Evaluating BraTS 19 sample:", sample_path)
         orig_path = config['val_images']+config['train_modality'][0]+sample_path +'.png' # T1 image
         truth_path = config['val_annotations']+sample_path+'.png'
         pred_path = "out_test_file/"+sample_path+"_pred.png"
@@ -106,12 +128,24 @@ def main(sample_output=False):
         # load as grayscale images
         orig_img = imread(orig_path, 0)
         truth_img = imread(truth_path, 0)
+        truth_img = resize(truth_img, (config['input_height'], config['input_width']), interpolation = INTER_NEAREST)
         pred_img = imread(pred_path, 0)
 
         unique, counts = np.unique(truth_img, return_counts=True)
         print('Truth', dict(zip(unique, counts)))
         unique, counts = np.unique(pred_img, return_counts=True)
         print('Preds', dict(zip(unique, counts)))
+
+        truth_whole = get_whole_tumor_mask(truth_img)
+        #truth_core = get_tumor_core_mask(truth_img)
+        #truth_enhancing = get_enhancing_tumor_mask(truth_img)
+        pred_whole = get_whole_tumor_mask(pred_img)
+        #pred_core = get_tumor_core_mask(pred_img)
+        #pred_enhancing = get_enhancing_tumor_mask(pred_img)
+
+        evaluation_functions = (get_dice_coefficient, get_hausdorff_distance, get_sensitivity, get_specificity)
+        print("Whole Dice, Hausdorff distance, Sensitivity, Specificity")
+        print([func(truth_whole, pred_whole)for func in evaluation_functions])
 
         f = plt.figure()
         # (nrows, ncols, index)
@@ -126,40 +160,5 @@ def main(sample_output=False):
         plt.imshow(truth_img)
         plt.show(block=True)
 
-        truth_img = resize(truth_img, (224, 224), interpolation = INTER_NEAREST)
-        truth_whole = get_whole_tumor_mask(truth_img)
-        #truth_core = get_tumor_core_mask(truth_img)
-        #truth_enhancing = get_enhancing_tumor_mask(truth_img)
-        pred_img = resize(pred_img, (224, 224), interpolation=INTER_NEAREST)
-        pred_whole = get_whole_tumor_mask(pred_img)
-        #pred_core = get_tumor_core_mask(pred_img)
-        #pred_enhancing = get_enhancing_tumor_mask(pred_img)
-
-        whole_dice_score = get_dice_coefficient(truth_whole, pred_whole)
-        #core_dice_score = get_dice_coefficient(truth_core, pred_core)
-        #enhancing_dice_score = get_dice_coefficient(truth_enhancing, pred_enhancing)
-        whole_hausdorff = get_hausdorff_distance(truth_whole, pred_whole)
-        #core_hausdorff = get_hausdorff_distance(truth_core, pred_core)
-        #enhancing_hausdorff = get_hausdorff_distance(truth_enhancing, pred_enhancing)
-        whole_sensitivity = get_sensitivity(truth_whole, pred_whole)
-        #core_sensitivity = get_sensitivity(truth_core, pred_core)
-        #enhancing_sensitivity = get_sensitivity(truth_enhancing, pred_enhancing)
-        whole_specificity = get_specificity(truth_whole, pred_whole)
-        #core_specificity = get_specificity(truth_core, pred_core)
-        #enhancing_specificity = get_specificity(truth_enhancing, pred_enhancing)
-
-        print('Whole dice score:', whole_dice_score)
-        #print('Core dice score:', core_dice_score)
-        #print('Enhancing dice score:', enhancing_dice_score)
-        print('Whole hausdorff distance (mm):', whole_hausdorff)
-        #print('Core hausdorff distance (mm):', core_hausdorff)
-        #print('Enhancing hausdorff distance (mm):', enhancing_hausdorff)
-        print('Whole sensitivity:', whole_sensitivity)
-        #print('Core sensitivity:', core_sensitivity)
-        #print('Enhancing sensitivity:', enhancing_sensitivity)
-        print('Whole specificity:', whole_specificity)
-        #print('Core specificity:', core_specificity)
-        #print('Enhancing specificity:', enhancing_specificity)
-
 if __name__ == "__main__":
-    main(sample_output=config['sample_output'])
+    main(sample_output=config['sample_output'], save_csv=config['save_csv'])

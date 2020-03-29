@@ -59,7 +59,7 @@ def predict(model=None, inp=None, out_fname=None):
         imwrite(out_fname, pr)
     return pr
 
-def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None, checkpoints_path=None, train_modalities=config['train_modality']):
+def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None, checkpoints_path=None, train_modalities=config['train_modality'], overwrite=False):
     if inps is None and (not inp_dir is None):
         inps = glob.glob(os.path.join(inp_dir,"*.png"))
 
@@ -74,8 +74,12 @@ def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None, checkpoi
             else :
                 out_fname = os.path.join(out_dir, str(i)+ ".jpg")
 
-        pr = predict(model, inp,out_fname)
-        all_prs.append(pr)
+        if not os.path.exists(out_fname):
+            pr = predict(model, inp,out_fname)
+            all_prs.append(pr)
+        elif overwrite:
+            pr = predict(model, inp,out_fname)
+            all_prs.append(pr)
     return all_prs
 
 def main(sample_output=False):
@@ -97,7 +101,8 @@ def main(sample_output=False):
         unet_2d_model,
         inp_dir = config['val_images']+config['train_modality'][0], 
         out_dir = config['pred_path'],
-        train_modalities = config['train_modality']
+        train_modalities = config['train_modality'],
+        overwrite = False
     )
 
     # sample output

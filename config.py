@@ -65,7 +65,6 @@ config['val_images'] = config['dataset_path'] + 'val_images/'
 config['val_annotations'] = config['dataset_path'] + 'val_segmentation/' + config['train_label'] 
 config['weight_dir'] = 'weights/'
 config['log_dir'] = 'logs'
-config['pred_path'] = 'preds/' + config['project_name'] + '/'
 config['model_checkpoints'] = os.path.join(config['weight_dir'] + config['project_name'], config['project_name'])
 config['tensorboard_path'] = 'logs_tensor_board/' + config['project_name']
 
@@ -112,18 +111,23 @@ config['elastic'] = (720, 24) # alpha=720, sigma=24
 config['random_order'] = True # apply augmenters in random order
 
 # prediction and evaluation
-config['sample_output'] = True
+config['sample_output'] = True # show a sample output from brats_19
 config['sample_path'] = 'BraTS19_TCIA10_408_1-66'
+config['pred_path'] = 'preds/' + config['project_name'] + '/'
+config['evaluate_path'] = 'evaluations/' # + config['project_name'] + '/'
+config['save_csv'] = True # save the evaluations as .csv file
 
 # create folders
 if not os.path.exists(config['log_dir']):
     os.mkdir(config['log_dir'])
 if not os.path.exists(config['weight_dir'] + config['project_name']):
     os.makedirs(config['weight_dir'] + config['project_name'])
-if not os.path.exists(config['pred_path']):
-    os.makedirs(config['pred_path'])
 if not os.path.exists(config['tensorboard_path']):
     os.makedirs(config['tensorboard_path'])
+if not os.path.exists(config['pred_path']):
+    os.makedirs(config['pred_path'])
+if not os.path.exists(config['evaluate_path']):
+    os.makedirs(config['evaluate_path'])
 
 # print configs
 print("\n\n####################################################################")

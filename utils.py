@@ -92,8 +92,8 @@ def get_tumor_core_mask(data):
 def get_enhancing_tumor_mask(data):
     return data == 4
 
-def get_dice_coefficient(truth, prediction):
-    return 2 * np.sum(truth * prediction)/(np.sum(truth) + np.sum(prediction))
+def get_dice_coefficient(truth, prediction, epsilon=0.00001):
+    return 2 * np.sum(truth * prediction)/(np.sum(truth) + np.sum(prediction) + epsilon)
 
 def evaluate_dice_coefficient(y_true, y_pred):
     y_true_f = y_true.flatten('F')
