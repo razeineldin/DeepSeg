@@ -52,6 +52,8 @@ config['n_classes'] = len(config['classes'])
 # default value for one modality is 3, otherwise equals the number of modalities
 config['model_depth'] = 3 if config['n_modalities']==1 else config['n_modalities']
 #config['up_layer'] = True # for models VGG16, ResNet50, MobileNet, MobileNetV2, Xception, NASNetMobile, DenseNet121
+
+#config['up_layer_models'] = ["", "", "", "", ""]
 config['up_layer'] = False if config['encoder_name']=="UNet" or config['encoder_name']=="UNet-Mod" or config['encoder_name']=="VGG16" else True
 
 # paths
@@ -83,9 +85,10 @@ config['input_width'] = 224
 config['output_height'] = 224
 config['output_width'] = 224
 config['epochs'] = 35	# number of training epochs
-config['load_model'] = False # continue training from a saved checkpoint
-config['model_num'] = '20' # number of the model to be loaded
-config['initial_epoch'] = config['model_num'] if config['load_model'] else 0  
+config['load_model'] = True # continue training from a saved checkpoint
+config['load_model_path'] = "paper_weights/DenseNet121_UNet-Mod.hdf5" # specifiy the loaded model path or None
+config['model_num'] = '20' # load model by the number of training epoch if config['load_model_path'] = None
+config['initial_epoch'] = config['model_num'] if config['load_model'] else 0  # continue training
 config['trainable'] = True # make the top layers of the model trainable or not (for transfer learning)
 
 config['n_train_images'] = len(glob.glob(config['train_images'] + 'image_FLAIR/*')) # 13779
