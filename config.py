@@ -37,7 +37,7 @@ config = dict()
 config['dataset_path'] = '/home/ramy/Documents/Datasets/BRATS_2019/dataset_19_no_empty/'
 
 # model configuration
-config['encoder_name'] = 'VGG16' # name of the encoder: UNet, UNet-Mod, VGG16, ResNet50, MobileNet, MobileNetV2, Xception, NASNetMobile, DenseNet121
+config['encoder_name'] = 'UNet-Mod' # name of the encoder: UNet, UNet-Mod, VGG16, ResNet50, MobileNet, MobileNetV2, Xception, NASNetMobile, DenseNet121
 config['decoder_name'] = 'UNet-Mod' # name of the decoder: UNet, UNet-Mod
 config['project_name'] = config['encoder_name'] + '_' + config['decoder_name']
 
@@ -86,7 +86,9 @@ config['output_height'] = 224
 config['output_width'] = 224
 config['epochs'] = 35	# number of training epochs
 config['load_model'] = True # continue training from a saved checkpoint
-config['load_model_path'] = "paper_weights/DenseNet121_UNet-Mod.hdf5" # specifiy the loaded model path or None
+#config['load_model_path'] = "paper_weights/DenseNet121_UNet-Mod.hdf5" # specifiy the loaded model path or None
+config['load_model_path'] = "paper_weights/UNet-Mod_UNet-Mod.hdf5" # specifiy the loaded model path or None
+
 config['model_num'] = '20' # load model by the number of training epoch if config['load_model_path'] = None
 config['initial_epoch'] = config['model_num'] if config['load_model'] else 0  # continue training
 config['trainable'] = True # make the top layers of the model trainable or not (for transfer learning)
@@ -108,6 +110,10 @@ config['rotate'] = (-25, 25)
 config['shear'] = (-8, 8)
 config['elastic'] = (720, 24) # alpha=720, sigma=24
 config['random_order'] = True # apply augmenters in random order
+
+# prediction and evaluation
+config['sample_output'] = True
+config['sample_path'] = 'BraTS19_TCIA10_408_1-66'
 
 # create folders
 if not os.path.exists(config['log_dir']):

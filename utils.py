@@ -23,7 +23,10 @@
 from config import *
 from keras import backend as K
 import numpy as np
+#import scipy.spatial
+from scipy.spatial.distance import directed_hausdorff
 
+# metrics and losses
 def weighted_categorical_crossentropy(y_true, y_pred):
     weights = K.variable(config['weights_arr'])
     y_pred /= K.sum(y_pred, axis=-1, keepdims=True)
@@ -92,18 +95,33 @@ def get_enhancing_tumor_mask(data):
 def get_dice_coefficient(truth, prediction):
     return 2 * np.sum(truth * prediction)/(np.sum(truth) + np.sum(prediction))
 
-def dice_coefficient(y_true, y_pred, smooth=1.):
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
-    intersection = K.sum(y_true_f * y_pred_f)
-    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-
-def evaluate_dice_coefficient_short(truth, prediction):
-    return 2 * np.sum(truth * prediction)/(np.sum(truth) + np.sum(prediction))
-
 def evaluate_dice_coefficient(y_true, y_pred):
     y_true_f = y_true.flatten('F')
     y_pred_f = y_pred.flatten('F')
     intersection = np.sum(y_true_f * y_pred_f)
     return (2. * intersection) / (np.sum(y_true_f) + np.sum(y_pred_f))
 
+def get_sensitivity(y_true, y_pred, epsilon=0.00001):
+    true_positives = np.sum(np.round(np.clip(y_true * y_pred, 0, 1)))
+    possible_positives = np.sum(np.round(np.clip(y_true, 0, 1)))
+    return true_positives / (possible_positives + epsilon)
+
+def get_specificity(y_true, y_pred, epsilon=0.00001):
+    true_negatives = np.sum(np.round(np.clip((1-y_true) * (1-y_pred), 0, 1)))
+    possible_negatives = np.sum(np.round(np.clip(1-y_true, 0, 1)))
+    return true_negatives / (possible_negatives + epsilon)
+
+def get_hausdorff_distance(truth, prediction):
+    """Computes the Hausdorff distance, uses `scipy` implementation of 'an efficient algorithm for
+    calculating the exact Hausdorff distance.' provided by A. A. Taha et al.
+    Args:
+        ground_true ground_true (np.ndarray[bool]): ground true mask to be compared with predicted one.
+        predicted predicted (np.ndarray[bool]): predicted mask, allowed values are from {True, False}.
+            Should be the same dimension as `ground_true`.
+    Returns:
+        double: The directed Hausdorff distance.
+    """
+    u = np.array(np.where(truth)).T
+    v = np.array(np.where(prediction)).T
+    hd, _, _ = directed_hausdorff(u, v)
+    return hd

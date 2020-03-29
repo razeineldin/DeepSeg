@@ -78,71 +78,70 @@ def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None, checkpoi
         all_prs.append(pr)
     return all_prs
 
-# get predictions of all images in the validation directory
-unet_2d_model = get_deepseg_model(
-        encoder_name=config['encoder_name'], 
-        decoder_name=config['decoder_name'], 
-        n_classes=config['n_classes'], 
-        input_height=config['input_height'], 
-        input_width=config['input_width'], 
-        depth=config['model_depth'], 
-        filter_size=config['filter_size'], 
-        up_layer=config['up_layer'],
-        trainable=config['trainable'], 
-        load_model=config['load_model'])
+def main(sample_output=False):
+    # create the DeepSeg model
+    unet_2d_model = get_deepseg_model(
+            encoder_name=config['encoder_name'], 
+            decoder_name=config['decoder_name'], 
+            n_classes=config['n_classes'], 
+            input_height=config['input_height'], 
+            input_width=config['input_width'], 
+            depth=config['model_depth'], 
+            filter_size=config['filter_size'], 
+            up_layer=config['up_layer'],
+            trainable=config['trainable'], 
+            load_model=config['load_model'])
 
-predict_multiple(
-    unet_2d_model,
-    inp_dir = config['val_images']+config['train_modality'][0], 
-    out_dir = config['pred_path'],
-    train_modalities = config['train_modality']
-)
+    # get predictions of all images in the validation directory
+    predict_multiple(
+        unet_2d_model,
+        inp_dir = config['val_images']+config['train_modality'][0], 
+        out_dir = config['pred_path'],
+        train_modalities = config['train_modality']
+    )
 
-# sample output
-### BRATS 2019
-sample_path1 = 'BraTS19_TCIA09_462_1-70' # LGG
-sample_path = 'BraTS19_TCIA10_408_1-50' # HGG
+    # sample output
+    if sample_output:
+        # BRATS 2019
+        sample_lgg_path = 'BraTS19_TCIA09_462_1-70' # LGG
+        sample_hgg_path = 'BraTS19_TCIA10_408_1-50' # HGG
+        orig_lgg_path = config['val_images']+config['train_modality'][0]+ sample_lgg_path +'.png' # FLAIR image
+        orig_hgg_path = config['val_images']+config['train_modality'][0]+ sample_hgg_path +'.png' # FLAIR image
+        truth_lgg_path = config['val_annotations']+ sample_lgg_path+'.png'
+        truth_hgg_path = config['val_annotations']+ sample_hgg_path+'.png'
+        pred_lgg_img = predict(unet_2d_model, inp= orig_lgg_path)
+        pred_hgg_img = predict(unet_2d_model, inp= orig_hgg_path)
 
-orig_path1 = config['val_images']+config['train_modality'][0]+ sample_path1 +'.png' # FLAIR image
-orig_path = config['val_images']+config['train_modality'][0]+ sample_path +'.png' # FLAIR image
+        # load as grayscale images
+        orig_hgg_img = imread(orig_hgg_path, 0)
+        orig_lgg_img = imread(orig_lgg_path, 0)
+        truth_hgg_img = imread(truth_hgg_path, 0)
+        truth_hgg_img = resize(truth_hgg_img, (224, 224), INTER_NEAREST)
+        truth_lgg_img = imread(truth_lgg_path, 0)
+        truth_lgg_img = resize(truth_lgg_img, (224, 224), INTER_NEAREST)
 
-truth_path = config['val_annotations']+ sample_path+'.png'
-truth_path1 = config['val_annotations']+ sample_path1+'.png'
+        f = plt.figure()
+        # (nrows, ncols, index)
+        f.add_subplot(2,3, 1)
+        plt.title('Original HGG image')
+        plt.imshow(orig_hgg_img, cmap='gray')
+        f.add_subplot(2,3, 2)
+        plt.title('Predicted HGG image')
+        plt.imshow(pred_hgg_img)
+        f.add_subplot(2,3, 3)
+        plt.title('Truth HGG image')
+        plt.imshow(truth_hgg_img)
 
-pred_img = predict(unet_2d_model, inp= orig_path)
-pred_img1 = predict(unet_2d_model, inp= orig_path1)
+        f.add_subplot(2,3, 4)
+        plt.title('Original LGG image')
+        plt.imshow(orig_lgg_img, cmap='gray')
+        f.add_subplot(2,3, 5)
+        plt.title('Predicted LGG image')
+        plt.imshow(pred_lgg_img)
+        f.add_subplot(2,3, 6)
+        plt.title('Truth LGG image')
+        plt.imshow(truth_lgg_img)
+        plt.show(block=True)
 
-print(pred_img.shape)
-
-# load as grayscale images
-orig_img = imread(orig_path, 0)
-orig_img1 = imread(orig_path1, 0)
-
-truth_img = imread(truth_path, 0)
-truth_img = resize(truth_img, (224, 224), interpolation = INTER_NEAREST)
-
-truth_img1 = imread(truth_path1, 0)
-truth_img1 = resize(truth_img1, (224, 224), interpolation = INTER_NEAREST)
-
-f = plt.figure()
-# (nrows, ncols, index)
-f.add_subplot(2,3, 1)
-plt.title('Original image')
-plt.imshow(orig_img, cmap='gray')
-f.add_subplot(2,3, 2)
-plt.title('Predicted image')
-plt.imshow(pred_img)
-f.add_subplot(2,3, 3)
-plt.title('Truth image')
-plt.imshow(truth_img)
-
-f.add_subplot(2,3, 4)
-plt.title('Original image')
-plt.imshow(orig_img1, cmap='gray')
-f.add_subplot(2,3, 5)
-plt.title('Predicted image')
-plt.imshow(pred_img1)
-f.add_subplot(2,3, 6)
-plt.title('Truth image')
-plt.imshow(truth_img1)
-plt.show(block=True)
+if __name__ == "__main__":
+    main(sample_output=config['sample_output'])

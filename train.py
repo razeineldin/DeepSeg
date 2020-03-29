@@ -56,39 +56,43 @@ def train_deepseg_model(model, train_images, train_annotations, input_height=224
 
     return results
 
+def main():
+    # create the DeepSeg model
+    unet_2d_model = get_deepseg_model(
+            encoder_name=config['encoder_name'], 
+            decoder_name=config['decoder_name'], 
+            n_classes=config['n_classes'], 
+            input_height=config['input_height'], 
+            input_width=config['input_width'], 
+            depth=config['model_depth'], 
+            filter_size=config['filter_size'], 
+            up_layer=config['up_layer'],
+            trainable=config['trainable'], 
+            load_model=config['load_model'])
 
-unet_2d_model =  get_deepseg_model(
-        encoder_name=config['encoder_name'], 
-        decoder_name=config['decoder_name'], 
-        n_classes=config['n_classes'], 
-        input_height=config['input_height'], 
-        input_width=config['input_width'], 
-        depth=config['model_depth'], 
-        filter_size=config['filter_size'], 
-        up_layer=config['up_layer'],
-        trainable=config['trainable'], 
-        load_model=config['load_model'])
-#print(unet_2d_model.summary())
+    # start training
+    history = train_deepseg_model(
+            unet_2d_model,
+            train_images = config['train_images'],
+            train_annotations = config['train_annotations'],
+            input_height = config['input_height'], 
+            input_width = config['input_width'],
+            output_height = config['output_height'], 
+            output_width = config['output_width'],
+            classes = config['classes'],
+            n_classes = config['n_classes'],
+            verify_dataset = config['verify_dataset'],
+            epochs = config['epochs'],
+            initial_epoch = config['initial_epoch'],
+            batch_size = config['batch_size'],
+            validate = config['validate'], 
+            val_images = config['val_images'], 
+            val_annotations = config['val_annotations'],
+            val_batch_size = config['val_batch_size'], 
+            steps_per_epoch = config['steps_per_epoch'],
+            validation_steps = config['validation_steps'],
+            do_augment=config['do_augment']
+    )
 
-history = train_deepseg_model(
-        unet_2d_model,
-        train_images = config['train_images'],
-        train_annotations = config['train_annotations'],
-        input_height = config['input_height'], 
-        input_width = config['input_width'],
-        output_height = config['output_height'], 
-        output_width = config['output_width'],
-        classes = config['classes'],
-        n_classes = config['n_classes'],
-        verify_dataset = config['verify_dataset'],
-        epochs = config['epochs'],
-        initial_epoch = config['initial_epoch'],
-        batch_size = config['batch_size'],
-        validate = config['validate'], 
-        val_images = config['val_images'], 
-        val_annotations = config['val_annotations'],
-        val_batch_size = config['val_batch_size'], 
-        steps_per_epoch = config['steps_per_epoch'],
-        validation_steps = config['validation_steps'],
-        do_augment=config['do_augment']
-)
+if __name__ == "__main__":
+    main()
