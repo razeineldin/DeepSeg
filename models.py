@@ -75,6 +75,8 @@ def get_deepseg_model(encoder_name, decoder_name, n_classes, input_height, input
 
     # Load the saved model
     if load_model:
-        model.load_weights(glob.glob(os.path.join(config['weight_dir']+config['project_name'],'*'+config['model_num']+'*'))[0])
-
+        if config['load_model_path'] is None:
+            model.load_weights(glob.glob(os.path.join(config['weight_dir']+config['project_name'],'*'+config['model_num']+'*'))[0])
+        else:
+            model.load_weights(config['load_model_path'])
     return model
