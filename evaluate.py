@@ -79,7 +79,7 @@ def save_evaluation_csv(pred_path='preds/', truth_path='truth/', evaluate_path='
         plt.savefig(evaluate_path+"/brats19_"+config['project_name']+"_scores_boxplot.png")
         plt.close()
 
-def main(evaluate_all=True, evaluate_keras=False, save_csv=False, sample_output=False):
+def main(evaluate_val=True, evaluate_val_nifti=True, evaluate_keras=False, save_csv=False, sample_output=False):
     # create the DeepSeg model
     unet_2d_model = get_deepseg_model(
             encoder_name=config['encoder_name'], 
@@ -93,8 +93,8 @@ def main(evaluate_all=True, evaluate_keras=False, save_csv=False, sample_output=
             trainable=config['trainable'], 
             load_model=config['load_model'])
 
-    # Evaluate the entire predictions
-    if evaluate_all:
+    # evaluate the entire predictions
+    if evaluate_val:
         print("Evaluating the whole predictions:")
         predictions_shape = (config['n_valid_images'], config['input_height'], config['input_width'])
         predictions = np.zeros(predictions_shape)
@@ -109,9 +109,54 @@ def main(evaluate_all=True, evaluate_keras=False, save_csv=False, sample_output=
         #pred_core = get_tumor_core_mask(predictions)
         #pred_enhancing = get_enhancing_tumor_mask(predictions)
 
-        evaluation_functions = (get_dice_coefficient, get_hausdorff_distance, get_sensitivity, get_specificity)
-        print("Dice, Hausdorff distance, Sensitivity, Specificity")
+        evaluation_functions = (get_dice_coefficient, get_sensitivity, get_specificity, get_hausdorff_distance)
+        print("Dice coefficient, Sensitivity, Specificity, Hausdorff distance")
         print([func(truth_whole, pred_whole)for func in evaluation_functions])
+
+    # evaluate the entire predictions (nifti)
+    if evaluate_val_nifti:
+        header = ("Dice", "Sensitivity", "Specificity", "Hausdorff distance")
+        evaluation_functions = (get_dice_coefficient, get_sensitivity, get_specificity, get_hausdorff_distance)
+        rows = list()
+        subject_ids = list()
+
+        for i, case_folder in enumerate(tqdm(glob.glob(config['valid_cases_dir']+"/*"))):
+            #print("case_folder", case_folder)
+            case_ID = os.path.basename(case_folder)
+            subject_ids.append(case_ID)
+            #print("case_ID", case_ID)
+
+            truth_file = os.path.join(case_folder, case_ID+"_truth.nii.gz")
+            truth_image = nib.load(truth_file)
+            truth = truth_image.get_data()
+            #truth = resize(truth, (config['input_height'], config['input_width']), interpolation = INTER_NEAREST)
+            prediction_file = config['pred_path_nifti_240'] +'/'+ "%s.nii.gz"%(case_ID)
+            prediction_image = nib.load(prediction_file)
+            prediction = prediction_image.get_data()
+ 
+            truth_whole = get_whole_tumor_mask(truth)
+            #truth_core = get_tumor_core_mask(truth)
+            #truth_enhancing = get_enhancing_tumor_mask(truth)
+            pred_whole = get_whole_tumor_mask(prediction)
+            #pred_core = get_tumor_core_mask(prediction)
+            #pred_enhancing = get_enhancing_tumor_mask(prediction)
+
+            rows.append([func(truth_whole, pred_whole)for func in evaluation_functions])
+            #print([func(truth_whole, pred_whole)for func in evaluation_functions])
+
+        df = pd.DataFrame.from_records(rows, columns=header, index=subject_ids)
+        df.to_csv(config['evaluate_path']+"/brats19_"+config['project_name']+"_scores_nifti.csv")
+
+        if config['save_plot']:
+            scores = dict()
+            for index, score in enumerate(df.columns[:-1]):
+                values = df.values.T[index]
+                scores[score] = values[np.isnan(values) == False]
+
+            plt.boxplot(list(scores.values()), labels=list(scores.keys()))
+            plt.ylabel("Evaluation scores")
+            plt.savefig(config['evaluate_path']+"/brats19_"+config['project_name']+"_scores_nifti_boxplot.png")
+            plt.close()
 
     # evaluate using keras 
     if evaluate_keras:
@@ -170,4 +215,4 @@ def main(evaluate_all=True, evaluate_keras=False, save_csv=False, sample_output=
         plt.show(block=True)
 
 if __name__ == "__main__":
-    main(config['evaluate_all'], config['evaluate_keras'], config['save_csv'], config['sample_output'])
+    main(config['evaluate_val'], config['evaluate_val_nifti'], config['evaluate_keras'], config['save_csv'], config['sample_output'])

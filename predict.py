@@ -29,6 +29,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from cv2 import imread, imwrite, resize, INTER_NEAREST
 from keras import backend as K
+import nibabel as nib
 
 K.set_image_data_format('channels_last')
 if K.image_data_format() == 'channels_first':
@@ -82,7 +83,7 @@ def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None, checkpoi
             all_prs.append(pr)
     return all_prs
 
-def main(sample_output=False):
+def main(sample_output=False, predict_val=True, predict_val_nifti=False):
     # create the DeepSeg model
     unet_2d_model = get_deepseg_model(
             encoder_name=config['encoder_name'], 
@@ -97,13 +98,58 @@ def main(sample_output=False):
             load_model=config['load_model'])
 
     # get predictions of all images in the validation directory
-    predict_multiple(
-        unet_2d_model,
-        inp_dir = config['val_images']+config['train_modality'][0], 
-        out_dir = config['pred_path'],
-        train_modalities = config['train_modality'],
-        overwrite = False
-    )
+    if predict_val:
+        predict_multiple(
+            unet_2d_model,
+            inp_dir = config['val_images']+config['train_modality'][0], 
+            out_dir = config['pred_path'],
+            train_modalities = config['train_modality'],
+            overwrite = False
+        )
+
+    # get predictions of all images in the validation directory as nifti
+    if predict_val_nifti:
+        f=open(config['val_cases_file'], "r")
+        valid_ids =f.read()
+        f.close
+
+        valid_dirs = valid_ids.split("\n")
+        del valid_dirs[-1]
+        for i, ID in enumerate(tqdm(valid_dirs)):
+            ID_name = os.path.basename(ID)
+            #print(i,ID_name)
+            img = config['valid_cases_dir'] + ID_name +'/' + ID_name + '_flair.nii.gz'
+            val_img = nib.load(img)
+            val_data = val_img.get_fdata()
+            #print("img: ", img)
+            #print("val_img.shape: ", val_img.shape)
+            pred_data = np.zeros((240, 240, 155))
+
+            for n in range (155):
+                #if n==1: break
+                tmp_val_img = np.zeros((240, 240, 3))
+                for ch in range(3):
+                    tmp_val_img[:,:,ch] = val_data[:,:,n]  # 240 x 240
+                tmp_val_img = resize(tmp_val_img, (224, 224), interpolation = INTER_NEAREST)
+                tmp_val_img = tmp_val_img.reshape(1, 224, 224, 3)
+ 
+                tmp_val_img = (tmp_val_img/tmp_val_img.max())*255 # scale to be 0 to 255 (uint8)
+                tmp_val_img = tmp_val_img.astype(np.uint8)
+
+                img_mean = tmp_val_img.mean() # normalization
+                img_std = tmp_val_img.std()
+                if(img_std != 0): tmp_val_img = (tmp_val_img - img_mean) / img_std
+                else: tmp_val_img = (tmp_val_img - img_mean)
+
+                pr = unet_2d_model.predict(tmp_val_img)[0] # (50176, 2)
+                pr = pr.reshape((config['output_height'],  config['output_width'],
+                                     config['n_classes'])).argmax(axis=2) # (224, 224)
+                #print("pr.shape: ", pr.shape)
+                pred_data[:,:,n] = resize(pr, (240, 240), interpolation = INTER_NEAREST)
+    
+            pred_img = nib.Nifti1Image(pred_data, val_img.affine, val_img.header)
+            #print("pred_img.shape: ", pred_img.shape)
+            nib.save(pred_img, config['pred_path_nifti_240'] +'/'+ "%s.nii.gz"%(ID_name))
 
     # sample output
     if sample_output:
@@ -149,4 +195,4 @@ def main(sample_output=False):
         plt.show(block=True)
 
 if __name__ == "__main__":
-    main(sample_output=config['sample_output'])
+    main(config['sample_output'], config['predict_val'], config['predict_val_nifti'])

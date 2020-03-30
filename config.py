@@ -114,11 +114,16 @@ config['sample_output'] = False # show a sample output from brats_19
 config['sample_path'] = 'BraTS19_TCIA10_408_1-66'
 config['pred_path'] = 'preds/' + config['project_name'] + '/'
 config['evaluate_path'] = 'evaluations/' # + config['project_name'] + '/'
-config['evaluate_all'] = False # evaluate the entire validation set
-config['evaluate_keras'] = True # evaluate using keras evaluate_generator()
+config['evaluate_val'] = False # evaluate the entire validation set
+config['evaluate_val_nifti'] = True # evaluate the validation set as nifti images
+config['evaluate_keras'] = False # evaluate using keras evaluate_generator()
 config['save_csv'] = False # save the evaluations as .csv file
-config['save_plot'] = False # save the evaluations plot
-
+config['save_plot'] = True # save the evaluations plot
+config['predict_val'] = False # predict the entire validation set
+config['predict_val_nifti'] = True # save the predicted validation set as nifti images
+config['pred_path_nifti_240'] = "preds/" +  config['project_name'] + '_nifti_240/'
+config['val_cases_file'] = "data/valid_cases_unique.txt" # path to the validation cases file
+config['valid_cases_dir'] = "valid_cases/"
 
 # create folders
 if not os.path.exists(config['log_dir']):
@@ -131,6 +136,8 @@ if not os.path.exists(config['pred_path']):
     os.makedirs(config['pred_path'])
 if not os.path.exists(config['evaluate_path']):
     os.makedirs(config['evaluate_path'])
+if not os.path.exists(config['pred_path_nifti_240']):
+    os.makedirs(config['pred_path_nifti_240'])
 
 # print configs
 print("\n\n####################################################################")

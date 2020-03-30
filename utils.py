@@ -81,6 +81,18 @@ def dice_argmax_whole(y_true, y_pred, smooth=1.):
     intersection = K.sum(y_true_whole * y_pred_whole)
     return (2. * intersection + smooth) / (K.sum(y_true_whole) + K.sum(y_pred_whole) + smooth)
 
+def hausdorff_distance(y_true, y_pred):
+    y_true = K.cast(K.argmax(y_true, axis=-1), "float32") # (?, ?)
+    y_pred = K.cast(K.argmax(y_pred, axis=-1), "float32") # (?, 50176)
+    y_true_f = K.flatten(y_true) # (?,)
+    y_pred_f = K.flatten(y_pred) # (?,)
+
+    hd, _, _ = directed_hausdorff(y_true_f, y_pred_f)
+
+    #u = np.array(np.where(y_true_f)).T
+    #v = np.array(np.where(y_pred_f)).T
+    #hd, _, _ = directed_hausdorff(u, v)
+    return hd
 
 # evaluation functions
 def get_whole_tumor_mask(data):
@@ -99,15 +111,26 @@ def evaluate_dice_coefficient(y_true, y_pred):
     intersection = np.sum(y_true * y_pred)
     return (2. * intersection) / (np.sum(y_true) + np.sum(y_pred))
 
+def sensitivity_new (seg,ground): 
+    #computs false negative rate
+    num=np.sum(np.multiply(ground, seg ))
+    denom=np.sum(ground)
+    if denom==0:
+        return 1
+    else:
+        return  num/denom
+
 def get_sensitivity(y_true, y_pred):
-    true_positives = np.sum(np.round(np.clip(y_true * y_pred, 0, 1)))
-    possible_positives = np.sum(np.round(np.clip(y_true, 0, 1)))
-    return true_positives / (possible_positives)
+    true_positives = np.sum(np.multiply(y_true, y_pred))
+    possible_positives = np.sum(y_true)
+    if possible_positives==0: return 1
+    else: return true_positives / possible_positives
 
 def get_specificity(y_true, y_pred):
-    true_negatives = np.sum(np.round(np.clip((1-y_true) * (1-y_pred), 0, 1)))
-    possible_negatives = np.sum(np.round(np.clip(1-y_true, 0, 1)))
-    return true_negatives / (possible_negatives)
+    true_negatives = np.sum(np.multiply(y_true==0, y_pred==0))
+    possible_negatives = np.sum(y_true==0)
+    if possible_negatives==0: return 1
+    else: return true_negatives / possible_negatives
 
 def get_hausdorff_distance(truth, prediction):
     """Computes the Hausdorff distance, uses `scipy` implementation of 'an efficient algorithm for
@@ -123,3 +146,4 @@ def get_hausdorff_distance(truth, prediction):
     v = np.array(np.where(prediction)).T
     hd, _, _ = directed_hausdorff(u, v)
     return hd
+
