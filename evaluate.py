@@ -79,7 +79,7 @@ def save_evaluation_csv(pred_path='preds/', truth_path='truth/', evaluate_path='
         plt.savefig(evaluate_path+"/brats19_"+config['project_name']+"_scores_boxplot.png")
         plt.close()
 
-def main(sample_output=False, save_csv=False):
+def main(evaluate_all=True, evaluate_keras=False, save_csv=False, sample_output=False):
     # create the DeepSeg model
     unet_2d_model = get_deepseg_model(
             encoder_name=config['encoder_name'], 
@@ -94,23 +94,30 @@ def main(sample_output=False, save_csv=False):
             load_model=config['load_model'])
 
     # Evaluate the entire predictions
-    """print("Evaluating the whole predictions:")
-    predictions_shape = (config['n_valid_images'], config['input_height'], config['input_width'])
-    predictions = np.zeros(predictions_shape)
-    predictions = get_prediction_images(pred_dir=config['pred_path'], preds_shape=predictions.shape)
-    truth_images = np.zeros(predictions_shape)
-    truth_images = get_truth_images(truth_dir=config['val_annotations'], truth_shape=truth_images.shape)
+    if evaluate_all:
+        print("Evaluating the whole predictions:")
+        predictions_shape = (config['n_valid_images'], config['input_height'], config['input_width'])
+        predictions = np.zeros(predictions_shape)
+        predictions = get_prediction_images(pred_dir=config['pred_path'], preds_shape=predictions.shape)
+        truth_images = np.zeros(predictions_shape)
+        truth_images = get_truth_images(truth_dir=config['val_annotations'], truth_shape=truth_images.shape)
 
-    truth_whole = get_whole_tumor_mask(truth_images)
-    #truth_core = get_tumor_core_mask(truth_images)
-    #truth_enhancing = get_enhancing_tumor_mask(truth_images)
-    pred_whole = get_whole_tumor_mask(predictions)
-    #pred_core = get_tumor_core_mask(predictions)
-    #pred_enhancing = get_enhancing_tumor_mask(predictions)
+        truth_whole = get_whole_tumor_mask(truth_images)
+        #truth_core = get_tumor_core_mask(truth_images)
+        #truth_enhancing = get_enhancing_tumor_mask(truth_images)
+        pred_whole = get_whole_tumor_mask(predictions)
+        #pred_core = get_tumor_core_mask(predictions)
+        #pred_enhancing = get_enhancing_tumor_mask(predictions)
 
-    evaluation_functions = (get_dice_coefficient, get_hausdorff_distance, get_sensitivity, get_specificity)
-    print("Dice, Hausdorff distance, Sensitivity, Specificity")
-    print([func(truth_whole, pred_whole)for func in evaluation_functions])"""
+        evaluation_functions = (get_dice_coefficient, get_hausdorff_distance, get_sensitivity, get_specificity)
+        print("Dice, Hausdorff distance, Sensitivity, Specificity")
+        print([func(truth_whole, pred_whole)for func in evaluation_functions])
+
+    # evaluate using keras 
+    if evaluate_keras:
+        val_generator = image_segmentation_generator(config['val_images'], config['val_annotations'],  config['val_batch_size'], config['classes'], config['input_height'], config['input_width'], config['output_height'], config['output_width'], do_augment=False, shuffle=False)
+
+        unet_2d_model.evaluate_generator(val_generator, steps=config['validation_steps'], verbose=1) #, max_queue_size=10, workers=1, use_multiprocessing=False) 
 
     # save data to .csv file
     if save_csv:
@@ -163,4 +170,4 @@ def main(sample_output=False, save_csv=False):
         plt.show(block=True)
 
 if __name__ == "__main__":
-    main(sample_output=config['sample_output'], save_csv=config['save_csv'])
+    main(config['evaluate_all'], config['evaluate_keras'], config['save_csv'], config['sample_output'])

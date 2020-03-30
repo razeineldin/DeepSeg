@@ -114,8 +114,11 @@ config['sample_output'] = False # show a sample output from brats_19
 config['sample_path'] = 'BraTS19_TCIA10_408_1-66'
 config['pred_path'] = 'preds/' + config['project_name'] + '/'
 config['evaluate_path'] = 'evaluations/' # + config['project_name'] + '/'
-config['save_csv'] = True # save the evaluations as .csv file
-config['save_plot'] = True # save the evaluations plot
+config['evaluate_all'] = False # evaluate the entire validation set
+config['evaluate_keras'] = True # evaluate using keras evaluate_generator()
+config['save_csv'] = False # save the evaluations as .csv file
+config['save_plot'] = False # save the evaluations plot
+
 
 # create folders
 if not os.path.exists(config['log_dir']):
