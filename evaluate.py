@@ -162,7 +162,8 @@ def main(evaluate_val=True, evaluate_val_nifti=True, evaluate_keras=False, save_
     if evaluate_keras:
         val_generator = image_segmentation_generator(config['val_images'], config['val_annotations'],  config['val_batch_size'], config['classes'], config['input_height'], config['input_width'], config['output_height'], config['output_width'], do_augment=False, shuffle=False)
 
-        unet_2d_model.evaluate_generator(val_generator, steps=config['validation_steps'], verbose=1) #, max_queue_size=10, workers=1, use_multiprocessing=False) 
+        results = unet_2d_model.evaluate_generator(val_generator, steps=config['validation_steps'], verbose=1, max_queue_size=1, workers=1, use_multiprocessing=False) 
+        print(results)
 
     # save data to .csv file
     if save_csv:

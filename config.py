@@ -118,7 +118,7 @@ config['evaluate_val'] = False # evaluate the entire validation set
 config['evaluate_val_nifti'] = True # evaluate the validation set as nifti images
 config['evaluate_keras'] = False # evaluate using keras evaluate_generator()
 config['save_csv'] = False # save the evaluations as .csv file
-config['save_plot'] = True # save the evaluations plot
+config['save_plot'] = False # save the evaluations plot
 config['predict_val'] = False # predict the entire validation set
 config['predict_val_nifti'] = True # save the predicted validation set as nifti images
 config['pred_path_nifti_240'] = "preds/" +  config['project_name'] + '_nifti_240/'
@@ -153,4 +153,15 @@ print("Training classes:", config['classes'])
 print("Training batch size:", config['batch_size'])
 print("Validation batch size:", config['val_batch_size'])
 print("####################################################################\n\n")
+
+
+# limit the GPU usage
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+
+gpu_id = 0 # for multi-gpu environment
+os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+gpu_config = tf.ConfigProto(allow_soft_placement=True)
+gpu_config.gpu_options.allow_growth = True
+set_session(tf.Session(config=gpu_config))
 
