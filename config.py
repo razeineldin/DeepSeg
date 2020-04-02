@@ -145,7 +145,7 @@ if not os.path.exists(config['pred_path_nifti_240']):
 # print configs
 print("\n\n####################################################################")
 print("Please cite the following paper when using DeepSeg :")
-print("Zeineldin, Ramy Ashraf, et al. \"DeepSeg: Deep Neural Network Framework for Automatic Brain Tumor Segmentation using Magnetic Resonance FLAIR Images.\" arXiv preprint arXiv:XXXX.XXXXX (2020).\n\n")
+print("Zeineldin, Ramy Ashraf, et al. \"DeepSeg: Deep Neural Network Framework for Automatic Brain Tumor Segmentation using Magnetic Resonance FLAIR Images. (2020).\n\n")
 
 print("Project name is:", config['project_name'])
 print("Dataset path:", config['dataset_path'])
