@@ -34,14 +34,17 @@ elif K.image_data_format() == 'channels_last':
     IMAGE_ORDERING = 'channels_last'
 
 config = dict()
-config['dataset_path'] = '/home/dl_machine/Datasets/BRATS_2019/dataset_19_no_empty/'
+# dataset paths
+config['brats_path'] = '/path/to/MICCAI_BraTS_2019_Data_Training/' # original BraTS 2019
+config['preprocessed_brats'] = '/path/to/MICCAI_BraTS_2019_Data_Training_Preprocessed/'
+config['dataset_path'] = '/path/to/dataset_19_no_empty/' # path to the dataset containing 2d images
 
 # model configuration
-config['encoder_name'] = 'UNet-Mod' # name of the encoder: UNet, UNet-Mod, VGG16, ResNet50, MobileNet, MobileNetV2, Xception, NASNetMobile, DenseNet121
+config['encoder_name'] = 'DenseNet121' # name of the encoder: UNet, UNet-Mod, VGG16, ResNet50, MobileNet, MobileNetV2, Xception, NASNetMobile, DenseNet121
 config['decoder_name'] = 'UNet-Mod' # name of the decoder: UNet, UNet-Mod
 config['project_name'] = config['encoder_name'] + '_' + config['decoder_name']
 
-config['all_modalities'] = ["image_t1/", "image_t1ce/", "image_FLAIR/", "image_t2/"]
+config['all_modalities'] = ["image_FLAIR/", "image_t1/", "image_t1ce/", "image_t2/"]
 config['train_modality'] = ["image_FLAIR/"]
 config['n_modalities'] = len(config['train_modality'])
 config['label_type'] = '_complete/' # _complete, _core, _enhancing, _l1, _l2, _l3
