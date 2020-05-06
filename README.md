@@ -4,5 +4,14 @@ Deep Neural Network Framework for Automatic Brain Tumor Segmentation using Magne
 # Citation
 The work has been accepted in the International Journal of Computer Assisted Radiology and Surgery (IJCARS). If you make use of the code, please cite the following paper in any resulting publications:
 
-
-[Zeineldin RA](https://orcid.org/0000-0002-8630-9046), [Karar ME](https://orcid.org/0000-0002-0474-4723), [Coburger J](https://orcid.org/0000-0002-3677-8258), [Wirtz CR](https://orcid.org/0000-0001-8358-1813), [Burgert O](https://orcid.org/0000-0001-7118-4730) (2020) **DeepSeg: Deep Neural Network Framework for Automatic Brain Tumor Segmentation using Magnetic Resonance FLAIR Images**. *In press*. [eprint arXiv:2004.12333](https://arxiv.org/abs/2004.12333)
+    @article{Zeineldin_2020,
+       title={DeepSeg: deep neural network framework for automatic brain tumor segmentation using magnetic resonance FLAIR images},
+       ISSN={1861-6429},
+       url={http://dx.doi.org/10.1007/s11548-020-02186-z},
+       DOI={10.1007/s11548-020-02186-z},
+       journal={International Journal of Computer Assisted Radiology and Surgery},
+       publisher={Springer Science and Business Media LLC},
+       author={Zeineldin, Ramy A. and Karar, Mohamed E. and Coburger, Jan and Wirtz, Christian R. and Burgert, Oliver},
+       year={2020},
+       month={May}
+    }
