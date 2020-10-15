@@ -89,4 +89,5 @@ The work has been published in the International Journal of Computer Assisted Ra
     }
     
 ## References
-
+1. Image augmentation for machine learning experiments. https://github.com/aleju/imgaug
+2. Image Segmentation Keras: https://github.com/divamgupta/image-segmentation-keras 
