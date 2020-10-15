@@ -1,5 +1,5 @@
 # DeepSeg: deep neural network framework for automatic brain tumor segmentation using magnetic resonance FLAIR images
-## Dependencies
+## Prerequisites
 1. Download the BRATS 2019 data by following the steps outlined on the [BRATS 2019 competition page](https://www.med.upenn.edu/cbica/brats2019/registration.html)
 
 2. Install the following packages:
