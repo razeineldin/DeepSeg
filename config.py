@@ -36,13 +36,13 @@ elif K.image_data_format() == 'channels_last':
 config = dict()
 # dataset paths
 config['brats_path'] = '/PATH/TO/MICCAI_BraTS_2019_Data_Training/' # original BraTS 2019
-config['preprocessed_brats'] = '/PATH/TO/BraTS19_train_preprocessed/'
-config['preprocessed_brats_imgs'] = '/PATH/TO/BraTS19_train_images/'
+config['preprocessed_brats'] = '/PATH/TO/BraTS19_train_preprocessed/' # output preprocessed BraTS 2019 (after preprocess.py)
+config['preprocessed_brats_imgs'] = '/PATH/TO/BraTS19_train_images/' # output preprocessed 2D images (after preprocess_2d_images.py)
 config['preprocessed_brats_val'] = '/PATH/TO/BraTS19_val_preprocessed/'
 config['preprocessed_brats_val_imgs'] = '/PATH/TO/BraTS19_val_images/'
 
 
-config['dataset_path'] = '/PATH/TO/dataset_brats19/' # path to the dataset containing 2d images
+config['dataset_path'] = '/PATH/TO/dataset_brats19/' # path to the dataset containing 2d images (train_images, train_segmentation, ... etc)
 
 # model configuration
 config['encoder_name'] = 'DenseNet121' # name of the encoder: UNet, UNet-Mod, VGG16, ResNet50, MobileNet, MobileNetV2, Xception, NASNetMobile, DenseNet121
