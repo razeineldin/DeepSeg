@@ -34,15 +34,14 @@ elif K.image_data_format() == 'channels_last':
     IMAGE_ORDERING = 'channels_last'
 
 config = dict()
+
+####### These variables should be modified to your local path #######
 # dataset paths
-config['brats_path'] = '/PATH/TO/MICCAI_BraTS_2019_Data_Training/' # original BraTS 2019
-config['preprocessed_brats'] = '/PATH/TO/BraTS19_train_preprocessed/' # output preprocessed BraTS 2019 (after preprocess.py)
-config['preprocessed_brats_imgs'] = '/PATH/TO/BraTS19_train_images/' # output preprocessed 2D images (after preprocess_2d_images.py)
-config['preprocessed_brats_val'] = '/PATH/TO/BraTS19_val_preprocessed/'
-config['preprocessed_brats_val_imgs'] = '/PATH/TO/BraTS19_val_images/'
-
-
+config['brats_path'] = '/PATH/TO/MICCAI_BraTS_2019_Data_Training/' # path to the original BraTS 2019
+config['preprocessed_brats'] = '/PATH/TO/BraTS19_train_preprocessed/' # path to the output preprocessed BraTS 2019 (after preprocess.py)
+config['preprocessed_brats_imgs'] = '/PATH/TO/BraTS19_train_images/' # path to the output preprocessed 2D images (after preprocess_2d_images.py)
 config['dataset_path'] = '/PATH/TO/dataset_brats19/' # path to the dataset containing 2d images (train_images, train_segmentation, ... etc)
+#####################################################################
 
 # model configuration
 config['encoder_name'] = 'DenseNet121' # name of the encoder: UNet, UNet-Mod, VGG16, ResNet50, MobileNet, MobileNetV2, Xception, NASNetMobile, DenseNet121
@@ -65,7 +64,7 @@ config['model_depth'] = 3 if config['n_modalities']==1 else config['n_modalities
 config['up_layer'] = False if config['encoder_name']=="UNet" or config['encoder_name']=="UNet-Mod" or config['encoder_name']=="VGG16" else True
 
 # paths
-config['verify_dataset'] = False
+config['verify_dataset'] = True
 config['validate'] = True # use the validation set
 config['train_images'] = config['dataset_path'] + 'train_images/'
 config['train_annotations'] = config['dataset_path'] + 'train_segmentation/' + config['train_label'] 
@@ -76,7 +75,7 @@ config['log_dir'] = 'logs'
 config['model_checkpoints'] = os.path.join(config['weight_dir'] + config['project_name'], config['project_name'])
 config['tensorboard_path'] = 'logs_tensor_board/' + config['project_name']
 
-####################################################################
+#####################################################################
 ### Hyper parameter: ###
 config['batch_size'] = 16
 config['val_batch_size'] = 16
@@ -84,7 +83,7 @@ config['filter_size'] = 32 # number of basic filters
 config['optimizer_lr'] = 1e-4
 config['optimizer_name'] = Adam(config['optimizer_lr'])
 config['weights_arr'] = np.array([0.05, 1.0]) # 2 Classes
-####################################################################
+#####################################################################
 
 # training parameters
 config['input_height'] = 224 # 240, 256
