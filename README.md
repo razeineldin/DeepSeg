@@ -1,4 +1,7 @@
 # DeepSeg: deep neural network framework for automatic brain tumor segmentation using magnetic resonance FLAIR images
+
+**[2021.12.21] Update:** This paper describes our contribution to the BraTS 2021 Challenge [Ensemble CNN Networks for GBM Tumors Segmentation using Multi-parametric MRI](https://arxiv.org/abs/2112.06554) and the docker image for reproducing our predictions on the BraTS 2021 is [online](https://hub.docker.com/r/razeineldin/deepseg21)
+
 ## Prerequisites
 1. Download the BRATS 2019 data by following the steps outlined on the [BRATS 2019 competition page](https://www.med.upenn.edu/cbica/brats2019/registration.html)
 
