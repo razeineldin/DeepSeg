@@ -147,6 +147,8 @@ def main(sample_output=False, predict_val=True, predict_val_nifti=False):
                 #print("pr.shape: ", pr.shape)
                 pred_data[:,:,n] = resize(pr, (240, 240), interpolation = INTER_NEAREST)
     
+            val_img.header.set_data_dtype(np.uint8)
+            pred_data = pred_data.astype(np.uint8)
             pred_img = nib.Nifti1Image(pred_data, val_img.affine, val_img.header)
             #print("pred_img.shape: ", pred_img.shape)
             nib.save(pred_img, config['pred_path_nifti_240'] +'/'+ "%s.nii.gz"%(ID_name))
